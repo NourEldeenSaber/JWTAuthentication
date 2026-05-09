@@ -11,6 +11,7 @@ using Services.Abstraction;
 using Microsoft.IdentityModel.Tokens;
 using System.Threading.Tasks;
 using System.Text;
+using Shared;
 
 namespace JWT_Authentication
 {
@@ -49,6 +50,7 @@ namespace JWT_Authentication
                 .AddEntityFrameworkStores<StoreIdentityDbContext>();
 
 
+            builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JWTOptions"));
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

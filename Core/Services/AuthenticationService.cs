@@ -8,17 +8,21 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Shared;
 namespace Services
 {
     public class AuthenticationService : IAuthenticationService
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly IOptions<JwtOptions> _options;
 
-        public AuthenticationService(UserManager<ApplicationUser> userManager , IConfiguration configuration)
+        public AuthenticationService(UserManager<ApplicationUser> userManager, IConfiguration configuration, IOptions<JwtOptions> options)
         {
            _userManager = userManager;
             _configuration = configuration;
+            _options = options;
         }
         public async Task<UserDto> LoginAsync(LoginDto loginDto)
         {
@@ -57,6 +61,7 @@ namespace Services
         {
             // Token [Issure, Audience, Claims, ExpireDate, signingCredentials]
 
+            var jwtOptions = _options.Value;
             // Create Claims
             var claims = new List<Claim>()
             {
@@ -71,14 +76,14 @@ namespace Services
             }
 
             // Generate Credentials
-            var secretKey = _configuration["JWTOptions:SecretKey"];
+            var secretKey = jwtOptions.SecretKey;
             var Key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!));
             var Cred = new SigningCredentials(Key, SecurityAlgorithms.HmacSha256);
 
             // Create Token
             var token = new JwtSecurityToken(
-                issuer: _configuration["JWTOptions:Issuer"],
-                audience: _configuration["JWTOptions:Audience"],
+                issuer: jwtOptions.Issuer,
+                audience: jwtOptions.Audience,
                 expires: DateTime.UtcNow.AddDays(2),
                 claims: claims,
                 signingCredentials:Cred);

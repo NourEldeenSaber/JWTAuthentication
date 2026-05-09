@@ -1,76 +1,76 @@
 # 🔐 JWT Authentication — ASP.NET Core
 
-نظام **JWT Authentication** كامل مبني بـ **ASP.NET Core** باستخدام **Clean Architecture**، يوفر تسجيل مستخدمين جدد وتسجيل دخول مع إصدار JWT Token.
+A complete **JWT Authentication** system built with **ASP.NET Core 8** following **Clean Architecture** principles. Provides user registration, login, role-based authorization, and JWT token generation.
 
 ---
 
-## 📁 هيكل المشروع
+## 📁 Project Structure
 
 ```
 JWTAuthentication/
 │
-├── 📦 Shared/                            # DTOs و Settings مشتركة
-│   ├── JwtOptions.cs                     # إعدادات JWT (Issuer, Audience, SecretKey)
+├── 📦 Shared/                               # Shared DTOs & Settings (no dependencies)
+│   ├── JwtOptions.cs                        # JWT settings (Issuer, Audience, SecretKey)
 │   └── Dtos/IdentityDtos/
-│       ├── LoginDto.cs                   # بيانات تسجيل الدخول
-│       ├── RegisterDto.cs                # بيانات التسجيل
-│       └── UserDto.cs                    # الرد بعد Login/Register
+│       ├── LoginDto.cs                      # Login request body
+│       ├── RegisterDto.cs                   # Registration request body
+│       └── UserDto.cs                       # Response after Login/Register
 │
-├── 🧠 Core/                              # Business Logic (لا يعتمد على أي Layer تانية)
+├── 🧠 Core/                                 # Business Logic (depends on nothing)
 │   ├── Domain/
 │   │   ├── Entities/IdentityModule/
-│   │   │   ├── ApplicationUser.cs        # User Entity (يرث من IdentityUser)
-│   │   │   └── Address.cs               # Address Entity (One-to-One مع User)
+│   │   │   ├── ApplicationUser.cs           # User entity (extends IdentityUser)
+│   │   │   └── Address.cs                  # Address entity (One-to-One with User)
 │   │   ├── Contracts/
-│   │   │   └── IDataInitializer.cs      # Interface لـ Seeding البيانات
+│   │   │   └── IDataInitializer.cs         # Interface for database seeding
 │   │   └── Exceptions/
-│   │       └── ValidationException.cs   # Custom Exception للأخطاء
+│   │       └── ValidationException.cs      # Custom exception for validation errors
 │   ├── Services.Abstraction/
-│   │   └── IAuthenticationService.cs    # Interface للـ Authentication Service
+│   │   └── IAuthenticationService.cs       # Authentication service contract
 │   └── Services/
-│       └── AuthenticationService.cs     # تنفيذ Login و Register وإنشاء JWT Token
+│       └── AuthenticationService.cs        # Login, Register & JWT token creation
 │
 ├── 🏗️ Infrastructure/
 │   ├── Presentation/
-│   │   ├── ApiController.cs             # Base Controller
-│   │   └── AuthenticationController.cs  # Endpoints: /Login و /Register
+│   │   ├── ApiController.cs                # Base controller
+│   │   └── AuthenticationController.cs     # /Login & /Register endpoints
 │   └── Presistence/
 │       └── Data/
 │           ├── DbContexts/
-│           │   └── StoreIdentityDbContext.cs  # Identity DbContext
+│           │   └── StoreIdentityDbContext.cs   # EF Core Identity DbContext
 │           ├── DataSeed/
-│           │   └── IdentityDataInitializer.cs # Seed Roles و Default Users
-│           └── Migrations/                    # EF Core Migrations
+│           │   └── IdentityDataInitializer.cs  # Seeds default roles & users
+│           └── Migrations/                     # EF Core auto-generated migrations
 │
-└── 🚀 JWT Authentication/               # Entry Point (Web API)
-    ├── Program.cs                        # تسجيل الـ Services والـ Middleware
+└── 🚀 JWT Authentication/                   # Entry Point (Web API)
+    ├── Program.cs                           # DI registration & middleware pipeline
     ├── Extensions/
-    │   └── WebApplicationRegistration.cs # Extension Methods للـ Migration و Seeding
-    └── appsettings.json                  # Connection String و JWT Settings
+    │   └── WebApplicationRegistration.cs   # Migration & seeding extension methods
+    └── appsettings.json                     # Connection string & JWT settings
 ```
 
 ---
 
-## ⚙️ المتطلبات
+## ⚙️ Requirements
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- SQL Server (أو SQL Server Express)
-- Visual Studio 2022 أو VS Code
+- SQL Server or SQL Server Express
+- Visual Studio 2022 / Rider / VS Code
 
 ---
 
-## 🚀 طريقة التشغيل
+## 🚀 Getting Started
 
-### 1. Clone المشروع
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/NourEldeenSaber/JWTAuthentication.git
 cd JWTAuthentication
 ```
 
-### 2. تعديل Connection String
+### 2. Configure the connection string
 
-افتح ملف `JWT Authentication/appsettings.json` وعدّل الـ Connection String حسب السيرفر عندك:
+Open `JWT Authentication/appsettings.json` and update the connection string to match your server:
 
 ```json
 {
@@ -80,33 +80,33 @@ cd JWTAuthentication
 }
 ```
 
-> **مثال:** لو عندك SQL Server Express: `Server=.\SQLEXPRESS`
+> **Example for SQL Server Express:** `Server=.\SQLEXPRESS`
 
-### 3. تشغيل المشروع
+### 3. Run the project
 
 ```bash
 dotnet run --project "JWT Authentication"
 ```
 
-عند التشغيل، المشروع بيعمل **تلقائياً**:
-- ✅ يطبّق الـ Migrations ويكوّن قاعدة البيانات
-- ✅ يضيف الـ Roles: `Admin` و `SuperAdmin`
-- ✅ يضيف يوزرين افتراضيين (Admin و SuperAdmin)
+On startup, the app automatically:
+- ✅ Applies pending EF Core migrations
+- ✅ Creates the database schema
+- ✅ Seeds default roles (`Admin`, `SuperAdmin`) and users
 
 ---
 
-## 🗄️ قاعدة البيانات
+## 🗄️ Database
 
-### الجداول المُنشأة
+### Tables created by Identity
 
-| الجدول | الوصف |
-|--------|-------|
-| `Users` | بيانات المستخدمين (يرث من AspNetUsers) |
-| `Roles` | الأدوار: Admin, SuperAdmin |
-| `UserRoles` | ربط المستخدمين بالأدوار |
-| `Addresses` | عناوين المستخدمين (اختياري) |
+| Table | Description |
+|-------|-------------|
+| `Users` | Application users (extends AspNetUsers) |
+| `Roles` | Application roles |
+| `UserRoles` | User-to-role mapping |
+| `Addresses` | Optional user addresses (One-to-One) |
 
-### البيانات الافتراضية (Seeded)
+### Seeded default users
 
 | DisplayName | Email | Password | Role |
 |-------------|-------|----------|------|
@@ -115,9 +115,7 @@ dotnet run --project "JWT Authentication"
 
 ---
 
-## 🔑 إعداد JWT
-
-في ملف `appsettings.json`:
+## 🔑 JWT Configuration
 
 ```json
 {
@@ -129,26 +127,26 @@ dotnet run --project "JWT Authentication"
 }
 ```
 
-| الإعداد | الوصف |
-|---------|-------|
-| `SecretKey` | المفتاح السري لتوقيع الـ Token (يجب أن يكون طويل وعشوائي في Production) |
-| `Issuer` | الجهة المُصدِرة للـ Token (رابط API) |
-| `Audience` | الجهة المستهدفة بالـ Token |
+| Setting | Description |
+|---------|-------------|
+| `SecretKey` | Secret used to sign tokens — must be long and random in production |
+| `Issuer` | Who issued the token (your API URL) |
+| `Audience` | Who the token is intended for |
 
-> ⚠️ **تحذير:** لا تستخدم نفس الـ SecretKey في Production — اتعمل Key جديد وخبّيه في Environment Variables أو Azure Key Vault.
+> ⚠️ **Never commit the real SecretKey to source control.** Use environment variables or a secrets manager in production.
 
 ---
 
-## 📡 الـ API Endpoints
+## 📡 API Endpoints
 
-### 📥 Register — تسجيل مستخدم جديد
+### Register — create a new account
 
 ```
 POST /api/Authentication/Register
 Content-Type: application/json
 ```
 
-**Request Body:**
+**Request body:**
 ```json
 {
   "email": "user@example.com",
@@ -159,7 +157,7 @@ Content-Type: application/json
 }
 ```
 
-**Response (200 OK):**
+**Response `200 OK`:**
 ```json
 {
   "email": "user@example.com",
@@ -170,14 +168,14 @@ Content-Type: application/json
 
 ---
 
-### 🔓 Login — تسجيل الدخول
+### Login — authenticate and receive a token
 
 ```
 POST /api/Authentication/Login
 Content-Type: application/json
 ```
 
-**Request Body:**
+**Request body:**
 ```json
 {
   "email": "admin@gmail.com",
@@ -185,7 +183,7 @@ Content-Type: application/json
 }
 ```
 
-**Response (200 OK):**
+**Response `200 OK`:**
 ```json
 {
   "email": "admin@gmail.com",
@@ -196,9 +194,9 @@ Content-Type: application/json
 
 ---
 
-### 🔒 استخدام الـ Token في الـ Requests المحمية
+### Using the token on protected endpoints
 
-بعد الـ Login، بعت الـ Token في كل Request في الـ Header:
+Include the token in every request as a Bearer header:
 
 ```
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -206,266 +204,395 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ---
 
-## 🔍 كيف يشتغل الكود؟ (شرح تفصيلي)
+## 🔍 How It Works — Step by Step
 
-### 1️⃣ تسجيل الـ Services في `Program.cs`
+### Step 1 — Plan the layers
 
-```csharp
-// ربط DbContext بـ SQL Server
-builder.Services.AddDbContext<StoreIdentityDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection")));
+Before writing any code, map each project to a Clean Architecture layer:
 
-// تسجيل Authentication Service
-builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-
-// إعداد ASP.NET Identity
-builder.Services.AddIdentityCore<ApplicationUser>()
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<StoreIdentityDbContext>();
-
-// ربط JWT Settings من appsettings.json بـ JwtOptions Class
-builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JWTOptions"));
-
-// إعداد JWT Authentication
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters()
-    {
-        ValidateIssuer = true,       // تحقق من Issuer
-        ValidateAudience = true,     // تحقق من Audience
-        ValidateLifetime = true,     // تحقق من صلاحية الـ Token
-        ValidIssuer = builder.Configuration["JWTOptions:Issuer"],
-        ValidAudience = builder.Configuration["JWTOptions:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["JWTOptions:SecretKey"]!))
-    };
-});
 ```
+Shared                →  DTOs & settings          (no dependencies)
+Core / Domain         →  Entities & interfaces     (no dependencies)
+Core / Services       →  Business logic            (depends on Domain & Shared)
+Infrastructure / Persistence  →  Database          (depends on Services)
+Infrastructure / Presentation →  Controllers       (depends on Services.Abstraction)
+Entry Point           →  Program.cs                (wires everything together)
+```
+
+**NuGet packages at this step:** none — just create the projects.
 
 ---
 
-### 2️⃣ عملية التسجيل `RegisterAsync`
+### Step 2 — Build the Shared layer
+
+`Shared` holds the DTOs that travel between layers. It has no NuGet dependencies — only built-in .NET types.
 
 ```csharp
-public async Task<UserDto> RegisterAsync(RegisterDto registerDto)
+// LoginDto.cs
+public record LoginDto([EmailAddress] string Email, string Password);
+
+// RegisterDto.cs
+public record RegisterDto(
+    [EmailAddress] string Email,
+    string DisplayName,
+    string UserName,
+    string Password,
+    [Phone] string PhoneNumber);
+
+// UserDto.cs — the response returned after login or register
+public record UserDto(string Email, string DisplayName, string Token);
+
+// JwtOptions.cs — bound from appsettings.json via Options Pattern
+public class JwtOptions
 {
-    // إنشاء User Object جديد
-    var user = new ApplicationUser()
-    {
-        Email = registerDto.Email,
-        DisplayName = registerDto.DisplayName,
-        UserName = registerDto.UserName,
-        PhoneNumber = registerDto.PhoneNumber,
-    };
-
-    // تخزين الـ User في قاعدة البيانات مع تشفير الباسورد تلقائياً
-    var result = await _userManager.CreateAsync(user, registerDto.Password);
-
-    // لو في أخطاء (باسورد ضعيف، إيميل مكرر...) → throw ValidationException
-    if (!result.Succeeded)
-    {
-        var errors = result.Errors.Select(e => e.Description).ToList();
-        throw new ValidationException(errors);
-    }
-
-    // إنشاء JWT Token وإرجاع بيانات الـ User
-    var token = await CreateTokenAsync(user);
-    return new UserDto(user.Email, user.DisplayName, token);
+    public string Issuer    { get; set; } = default!;
+    public string Audience  { get; set; } = default!;
+    public string SecretKey { get; set; } = default!;
 }
 ```
 
+**NuGet packages in this layer:** none.
+
 ---
 
-### 3️⃣ عملية تسجيل الدخول `LoginAsync`
+### Step 3 — Build the Domain layer
+
+`Domain` contains entities and contracts. It has one package because `ApplicationUser` inherits from `IdentityUser`.
 
 ```csharp
-public async Task<UserDto> LoginAsync(LoginDto loginDto)
+// ApplicationUser.cs
+public class ApplicationUser : IdentityUser
 {
-    // البحث عن الـ User بالإيميل
-    var user = await _userManager.FindByEmailAsync(loginDto.Email);
-    if (user is null)
-        throw new Exception("User Invalid");
+    public string   DisplayName { get; set; } = default!;
+    public Address? Address     { get; set; }
+}
 
-    // التحقق من الباسورد
-    var isValid = await _userManager.CheckPasswordAsync(user, loginDto.Password);
-    if (!isValid)
-        throw new Exception("User Invalid");
+// IDataInitializer.cs
+public interface IDataInitializer
+{
+    Task InitializeAsync();
+}
 
-    // إنشاء JWT Token وإرجاع بيانات الـ User
-    var token = await CreateTokenAsync(user);
-    return new UserDto(user.Email!, user.DisplayName, token);
+// ValidationException.cs
+public sealed class ValidationException : Exception
+{
+    public IEnumerable<string> Errors { get; set; } = [];
+    public ValidationException(IEnumerable<string> messages) : base("Validation failed")
+        => Errors = messages;
 }
 ```
 
+**NuGet packages in this layer:**
+
+| Package | Version | Why |
+|---------|---------|-----|
+| `Microsoft.AspNetCore.Identity.EntityFrameworkCore` | 8.0.26 | Provides `IdentityUser` that `ApplicationUser` inherits from |
+
 ---
 
-### 4️⃣ إنشاء الـ JWT Token `CreateTokenAsync`
+### Step 4 — Define the service contract
 
-هنا القلب الحقيقي للـ JWT Authentication:
+`Services.Abstraction` declares *what* the service does without revealing *how*. No packages needed.
+
+```csharp
+// IAuthenticationService.cs
+public interface IAuthenticationService
+{
+    Task<UserDto> LoginAsync(LoginDto loginDto);
+    Task<UserDto> RegisterAsync(RegisterDto registerDto);
+}
+```
+
+**NuGet packages in this layer:** none.
+
+---
+
+### Step 5 — Implement the Authentication Service
+
+This is the heart of the JWT system. `CreateTokenAsync` builds the token in four stages:
 
 ```csharp
 private async Task<string> CreateTokenAsync(ApplicationUser user)
 {
     var jwtOptions = _options.Value;
 
-    // 1️⃣ إنشاء الـ Claims (بيانات داخل الـ Token)
-    var claims = new List<Claim>()
+    // 1. Build Claims — data embedded inside the token payload
+    var claims = new List<Claim>
     {
         new Claim(JwtRegisteredClaimNames.Email, user.Email!),
-        new Claim(JwtRegisteredClaimNames.Name, user.DisplayName),
+        new Claim(JwtRegisteredClaimNames.Name,  user.DisplayName),
     };
 
-    // إضافة Roles الـ User للـ Claims
     var roles = await _userManager.GetRolesAsync(user);
     foreach (var role in roles)
         claims.Add(new Claim(ClaimTypes.Role, role));
 
-    // 2️⃣ إنشاء Signing Credentials بالـ Secret Key
-    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey));
-    var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+    // 2. Create Signing Credentials using the secret key
+    var key  = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey));
+    var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-    // 3️⃣ بناء الـ Token
+    // 3. Build the token object
     var token = new JwtSecurityToken(
-        issuer: jwtOptions.Issuer,
-        audience: jwtOptions.Audience,
-        expires: DateTime.UtcNow.AddDays(2),    // صالح لمدة يومين
-        claims: claims,
-        signingCredentials: credentials
-    );
+        issuer:             jwtOptions.Issuer,
+        audience:           jwtOptions.Audience,
+        expires:            DateTime.UtcNow.AddDays(2),
+        claims:             claims,
+        signingCredentials: cred);
 
-    // 4️⃣ تحويل الـ Token لـ String وإرجاعه
+    // 4. Serialize it to a compact string
     return new JwtSecurityTokenHandler().WriteToken(token);
 }
 ```
 
-**مكونات الـ JWT Token:**
+**How a JWT token is structured:**
 
 ```
-Header.Payload.Signature
-  ↓        ↓          ↓
-eyJhbG... eyJlbW... SflKxwRJ...
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9    ← Header  (algorithm + type)
+.eyJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSJ9    ← Payload (claims: email, name, roles, expiry)
+.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQ  ← Signature (HMAC-SHA256 — prevents tampering)
 ```
 
-| الجزء | المحتوى |
-|-------|---------|
-| Header | Algorithm (HmacSha256) + Type (JWT) |
-| Payload | Claims: Email, DisplayName, Roles, ExpiryDate |
-| Signature | HMAC(Header + Payload, SecretKey) — لضمان عدم التلاعب |
+**NuGet packages in this layer:**
+
+| Package | Version | Why |
+|---------|---------|-----|
+| `Microsoft.AspNetCore.Authentication.JwtBearer` | 8.0.26 | Provides `JwtSecurityToken`, `JwtSecurityTokenHandler`, `SymmetricSecurityKey`, and `SigningCredentials` |
 
 ---
 
-### 5️⃣ الـ Data Seeding التلقائي
+### Step 6 — Build the Persistence layer
 
-عند أول تشغيل للمشروع:
-
-```csharp
-// في Program.cs
-await app.MigrateIdentityDatabase();   // تطبيق الـ Migrations
-await app.IdentitySeedDatabaseAsync(); // إضافة البيانات الافتراضية
-```
-
-الـ `IdentityDataInitializer` بيتحقق لو في Roles أو Users مضافين قبل كده، ولو لأ بيضيفهم:
+`Persistence` handles everything database-related: the DbContext, migrations, and seeding.
 
 ```csharp
-// إنشاء الـ Roles لو مش موجودة
-if (!_roleManager.Roles.Any())
+// StoreIdentityDbContext.cs
+public class StoreIdentityDbContext : IdentityDbContext<ApplicationUser>
 {
-    await _roleManager.CreateAsync(new IdentityRole("Admin"));
-    await _roleManager.CreateAsync(new IdentityRole("SuperAdmin"));
-}
+    public StoreIdentityDbContext(DbContextOptions<StoreIdentityDbContext> options)
+        : base(options) { }
 
-// إنشاء الـ Default Users لو مش موجودين
-if (!_userManager.Users.Any())
-{
-    await _userManager.CreateAsync(user01, "P@ssw0rd");
-    await _userManager.AddToRoleAsync(user01, "Admin");
-    // ...
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        builder.Entity<Address>().ToTable("Addresses");
+        builder.Entity<ApplicationUser>().ToTable("Users");
+        builder.Entity<IdentityRole>().ToTable("Roles");
+        builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
+    }
 }
 ```
 
----
-
-## 🏛️ الـ Architecture Pattern
-
-المشروع بيتبع **Clean Architecture**:
-
-```
-┌─────────────────────────────────────────┐
-│           Presentation Layer            │  ← Controllers (HTTP Requests)
-│        (AuthenticationController)       │
-├─────────────────────────────────────────┤
-│            Application Layer            │  ← Services (Business Logic)
-│         (AuthenticationService)         │
-├─────────────────────────────────────────┤
-│              Domain Layer               │  ← Entities + Interfaces (Core)
-│      (ApplicationUser, IAuthService)    │
-├─────────────────────────────────────────┤
-│          Infrastructure Layer           │  ← DbContext + DataSeed
-│    (StoreIdentityDbContext, Seeding)    │
-└─────────────────────────────────────────┘
-```
-
-**الفائدة:** كل Layer معزولة — تقدر تغير الـ Database أو الـ Authentication Logic من غير ما تأثر على بقية الكود.
-
----
-
-## 🛡️ حماية الـ Endpoints
-
-لحماية أي Endpoint بالـ JWT Token، بستخدم `[Authorize]`:
+`IdentityDataInitializer` runs at startup and seeds default roles and users only if the database is empty:
 
 ```csharp
-// السماح للمستخدمين المسجلين فقط
+public async Task InitializeAsync()
+{
+    if (!_roleManager.Roles.Any())
+    {
+        await _roleManager.CreateAsync(new IdentityRole("Admin"));
+        await _roleManager.CreateAsync(new IdentityRole("SuperAdmin"));
+    }
+
+    if (!_userManager.Users.Any())
+    {
+        var admin = new ApplicationUser
+        {
+            DisplayName = "admin", UserName = "admin",
+            Email = "admin@gmail.com", PhoneNumber = "01012131415"
+        };
+        await _userManager.CreateAsync(admin, "P@ssw0rd");
+        await _userManager.AddToRoleAsync(admin, "Admin");
+        // ... same for superAdmin
+    }
+}
+```
+
+**NuGet packages in this layer:**
+
+| Package | Version | Why |
+|---------|---------|-----|
+| `Microsoft.EntityFrameworkCore.SqlServer` | 8.0.26 | SQL Server provider — makes `options.UseSqlServer()` work |
+
+---
+
+### Step 7 — Build the Presentation layer
+
+Controllers receive HTTP requests and delegate to the service. They know nothing about the database.
+
+```csharp
+// ApiController.cs — base class
+[ApiController]
+[Route("api/[controller]")]
+public class ApiController { }
+
+// AuthenticationController.cs
+public class AuthenticationController : ApiController
+{
+    private readonly IAuthenticationService _service;
+
+    public AuthenticationController(IAuthenticationService service)
+        => _service = service;
+
+    [HttpPost("Login")]
+    public async Task<ActionResult<UserDto>> LoginAsync([FromBody] LoginDto loginDto)
+        => Ok(await _service.LoginAsync(loginDto));
+
+    [HttpPost("Register")]
+    public async Task<ActionResult<UserDto>> RegisterAsync(RegisterDto registerDto)
+        => Ok(await _service.RegisterAsync(registerDto));
+}
+```
+
+**NuGet packages in this layer:**
+
+| Package | Version | Why |
+|---------|---------|-----|
+| `FrameworkReference: Microsoft.AspNetCore.App` | built-in | Not a NuGet package — provides `ControllerBase`, `ActionResult`, and the full MVC stack at no extra cost |
+
+---
+
+### Step 8 — Wire everything in Program.cs
+
+Register all services and configure the JWT validation middleware. Order matters.
+
+```csharp
+// 1. Register DbContext with SQL Server
+builder.Services.AddDbContext<StoreIdentityDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection")));
+
+// 2. Register application services
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddKeyedScoped<IDataInitializer, IdentityDataInitializer>("Identity");
+
+// 3. Register ASP.NET Identity
+builder.Services.AddIdentityCore<ApplicationUser>()
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<StoreIdentityDbContext>();
+
+// 4. Bind JWT settings from appsettings.json via Options Pattern
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JWTOptions"));
+
+// 5. Configure JWT Bearer Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme    = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer   = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidIssuer      = builder.Configuration["JWTOptions:Issuer"],
+        ValidAudience    = builder.Configuration["JWTOptions:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["JWTOptions:SecretKey"]!))
+    };
+});
+
+// 6. Run migrations and seeding automatically on startup
+await app.MigrateIdentityDatabase();
+await app.IdentitySeedDatabaseAsync();
+
+// 7. Middleware pipeline — UseAuthentication MUST come before UseAuthorization
+app.UseAuthentication();
+app.UseAuthorization();
+```
+
+**NuGet packages in this layer:**
+
+| Package | Version | Why |
+|---------|---------|-----|
+| `Swashbuckle.AspNetCore` | 6.6.2 | Generates the `/swagger` UI for testing endpoints during development |
+| `Microsoft.EntityFrameworkCore.Tools` | 8.0.26 | Enables `dotnet ef migrations` — only used at development time (`PrivateAssets=all` means it is not deployed to production) |
+
+---
+
+### Step 9 — Protect endpoints with [Authorize]
+
+```csharp
+// Any authenticated user
 [Authorize]
 [HttpGet("profile")]
 public IActionResult GetProfile() { ... }
 
-// السماح لـ Admin فقط
+// Admin role only
 [Authorize(Roles = "Admin")]
-[HttpGet("admin-only")]
+[HttpGet("dashboard")]
 public IActionResult AdminDashboard() { ... }
 
-// السماح لـ Admin أو SuperAdmin
+// Admin or SuperAdmin
 [Authorize(Roles = "Admin,SuperAdmin")]
 [HttpGet("management")]
 public IActionResult Management() { ... }
 ```
 
----
+**The four test scenarios — all four must pass before the implementation is complete:**
 
-## 📦 الـ NuGet Packages المستخدمة
-
-| Package | الاستخدام |
-|---------|-----------|
-| `Microsoft.AspNetCore.Identity.EntityFrameworkCore` | ASP.NET Identity مع EF Core |
-| `Microsoft.EntityFrameworkCore.SqlServer` | SQL Server Provider |
-| `Microsoft.AspNetCore.Authentication.JwtBearer` | JWT Bearer Authentication |
-| `System.IdentityModel.Tokens.Jwt` | إنشاء والتحقق من JWT Tokens |
-| `Microsoft.IdentityModel.Tokens` | SymmetricSecurityKey و SigningCredentials |
+| Scenario | Expected result |
+|----------|----------------|
+| Request with no token | `401 Unauthorized` |
+| Request with wrong or expired token | `401 Unauthorized` |
+| Request with valid token but wrong role | `403 Forbidden` |
+| Request with valid token and correct role | `200 OK` |
 
 ---
 
-## 🧪 تجربة الـ API
+## 📦 NuGet Packages — Complete Summary per Layer
 
-### عن طريق Swagger
+| Layer | Package | Version |
+|-------|---------|---------|
+| **Shared** | — | none |
+| **Domain** | `Microsoft.AspNetCore.Identity.EntityFrameworkCore` | 8.0.26 |
+| **Services.Abstraction** | — | none |
+| **Services** | `Microsoft.AspNetCore.Authentication.JwtBearer` | 8.0.26 |
+| **Persistence** | `Microsoft.EntityFrameworkCore.SqlServer` | 8.0.26 |
+| **Presentation** | `FrameworkReference: Microsoft.AspNetCore.App` | built-in |
+| **Entry Point** | `Swashbuckle.AspNetCore` | 6.6.2 |
+| **Entry Point** | `Microsoft.EntityFrameworkCore.Tools` | 8.0.26 |
 
-بعد التشغيل، افتح المتصفح على:
+> The key principle: the Core layers (Domain + Services) contain no infrastructure packages. The only exception is `JwtBearer` in Services, because that is where the token is actually built.
+
+---
+
+## 🏛️ Architecture Overview
+
 ```
-https://localhost:7199/swagger
+┌──────────────────────────────────────────┐
+│           Presentation Layer             │  HTTP in → delegate to service
+│        (AuthenticationController)        │
+├──────────────────────────────────────────┤
+│            Application Layer             │  Business rules live here
+│         (AuthenticationService)          │
+├──────────────────────────────────────────┤
+│              Domain Layer                │  Entities & interfaces — pure C#
+│    (ApplicationUser · IAuthService)      │
+├──────────────────────────────────────────┤
+│          Infrastructure Layer            │  Database, migrations, seeding
+│  (StoreIdentityDbContext · DataSeed)     │
+└──────────────────────────────────────────┘
 ```
 
-للـ Endpoints المحمية في Swagger، اضغط **Authorize** وادخل:
+Each layer only depends on the layer below it. The Domain knows nothing about SQL Server, EF Core, or HTTP.
+
+---
+
+## 🧪 Testing the API
+
+### Swagger (built-in)
+
+Navigate to `https://localhost:7199/swagger` after running the project.
+
+For protected endpoints, click **Authorize** and enter:
 ```
 Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-### عن طريق curl
+### curl
 
 ```bash
-# Register
+# Register a new user
 curl -X POST https://localhost:7199/api/Authentication/Register \
   -H "Content-Type: application/json" \
   -d '{"email":"test@test.com","displayName":"Test","userName":"test","password":"P@ssw0rd","phoneNumber":"01000000000"}'
@@ -475,4 +602,8 @@ curl -X POST https://localhost:7199/api/Authentication/Login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@gmail.com","password":"P@ssw0rd"}'
 ```
+
+### Decode the token
+
+Paste any returned token into [jwt.io](https://jwt.io) to inspect the claims (email, display name, roles, expiry) and verify the signature.
 

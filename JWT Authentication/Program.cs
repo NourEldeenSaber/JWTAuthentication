@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Presistence.Data.DataSeed;
 using Presistence.Data.DbContexts;
+using Services;
+using Services.Abstraction;
 using System.Threading.Tasks;
 
 namespace JWT_Authentication
@@ -29,6 +31,8 @@ namespace JWT_Authentication
                 // Configure Entity Framework Core to use SQL Server as the database provider
                 options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"));
             });
+
+            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
             // Register IdentityDataInitializer as a keyed scoped service
             // using the key "Default" for dependency resolution

@@ -1,11 +1,13 @@
+using JWT_Authentication.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Presistence.Data.DbContexts;
+using System.Threading.Tasks;
 
 namespace JWT_Authentication
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +28,14 @@ namespace JWT_Authentication
 
 
             var app = builder.Build();
+
+            #region Pennding Migrations
+
+            await app.MigrateIdentityDatabase();
+
+            #endregion
+
+
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

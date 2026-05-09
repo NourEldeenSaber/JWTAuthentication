@@ -476,9 +476,3 @@ curl -X POST https://localhost:7199/api/Authentication/Login \
   -d '{"email":"admin@gmail.com","password":"P@ssw0rd"}'
 ```
 
-
----
-
-## 👨‍💻 المطور
-
-**Nour Eldeen Saber** — [GitHub](https://github.com/NourEldeenSaber)

@@ -1,13 +1,16 @@
 using Domain.Contracts;
 using Domain.Entities.IdentitiyModule;
 using JWT_Authentication.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Presistence.Data.DataSeed;
 using Presistence.Data.DbContexts;
 using Services;
 using Services.Abstraction;
+using Microsoft.IdentityModel.Tokens;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace JWT_Authentication
 {
@@ -46,6 +49,27 @@ namespace JWT_Authentication
                 .AddEntityFrameworkStores<StoreIdentityDbContext>();
 
 
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidIssuer = builder.Configuration["JWTOptions:Issuer"],
+                    ValidAudience = builder.Configuration["JWTOptions:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWTOptions:SecretKey"]!)),
+                };
+            });
+
+
+
+
+
             var app = builder.Build();
 
             #region Pennding Migrations - Seeding
@@ -65,7 +89,7 @@ namespace JWT_Authentication
             }
 
             app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

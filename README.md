@@ -476,15 +476,6 @@ curl -X POST https://localhost:7199/api/Authentication/Login \
   -d '{"email":"admin@gmail.com","password":"P@ssw0rd"}'
 ```
 
----
-
-## ⚠️ ملاحظات مهمة للـ Production
-
-1. **SecretKey:** استخدم Key طويل وعشوائي (256-bit على الأقل) واحتفظ بيه في Environment Variables
-2. **HTTPS:** تأكد إن الـ API شغال على HTTPS دايماً
-3. **Token Expiry:** يومين مدة كتيرة — فكّر تقليلها وإضافة Refresh Token
-4. **Error Messages:** الرسالة "User Invalid" للـ Login والـ Register معاً — لأمان أكبر لا تفصح إيه المشكلة بالضبط
-5. **Refresh Token:** المشروع حالياً بيصدر Access Token فقط — ممكن تضيف Refresh Token لتجربة أفضل
 
 ---
 

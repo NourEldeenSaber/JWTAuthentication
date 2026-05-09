@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using Presistence.Data.DbContexts;
 
 namespace JWT_Authentication
 {
@@ -13,6 +15,15 @@ namespace JWT_Authentication
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+
+            // Register StoreIdentityDbContext in the dependency injection container
+            builder.Services.AddDbContext<StoreIdentityDbContext>(options =>
+            {
+                // Configure Entity Framework Core to use SQL Server as the database provider
+                options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"));
+            });
+
 
             var app = builder.Build();
 

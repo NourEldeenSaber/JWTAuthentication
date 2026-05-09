@@ -1,5 +1,9 @@
+using Domain.Contracts;
+using Domain.Entities.IdentitiyModule;
 using JWT_Authentication.Extensions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Presistence.Data.DataSeed;
 using Presistence.Data.DbContexts;
 using System.Threading.Tasks;
 
@@ -26,12 +30,24 @@ namespace JWT_Authentication
                 options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"));
             });
 
+            // Register IdentityDataInitializer as a keyed scoped service
+            // using the key "Default" for dependency resolution
+            builder.Services.AddKeyedScoped<IDataInitializer, IdentityDataInitializer>("Identity");
+
+            /* Register ASP.NET Core Identity services using ApplicationUser as the user entity
+             * Enable role management with IdentityRole
+             * Configure Identity to use StoreIdentityDbContext
+             * for storing users, roles, and authentication data */
+            builder.Services.AddIdentityCore<ApplicationUser>().AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<StoreIdentityDbContext>();
+
 
             var app = builder.Build();
 
-            #region Pennding Migrations
+            #region Pennding Migrations - Seeding
 
             await app.MigrateIdentityDatabase();
+            await app.IdentitySeedDatabaseAsync();
 
             #endregion
 
